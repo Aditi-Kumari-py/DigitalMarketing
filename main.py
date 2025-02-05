@@ -35,4 +35,3 @@ if st.button("Submit"):
         st.write(response_text)  # Show only AI's message
     else:
         st.warning("Please enter a message.")
-
