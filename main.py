@@ -10,22 +10,29 @@ APPLICATION_TOKEN = "AstraCS:lmqTcMopslHNxGkESPiQtByh:ddd6464f67cf59f425dec18e1c
 ENDPOINT = FLOW_ID  # Default to flow ID
 TWEAKS = {}
 
-def run_flow(message: str) -> dict:
-    """Send request to Langflow API and return the response."""
+def run_flow(message: str) -> str:
+    """Send request to Langflow API and return only the AI's response text."""
     api_url = f"{BASE_API_URL}/lf/{LANGFLOW_ID}/api/v1/run/{ENDPOINT}"
     headers = {"Authorization": f"Bearer {APPLICATION_TOKEN}", "Content-Type": "application/json"}
     payload = {"input_value": message, "output_type": "chat", "input_type": "chat", "tweaks": TWEAKS}
-    response = requests.post(api_url, json=payload, headers=headers)
-    return response.json()
+
+    response = requests.post(api_url, json=payload, headers=headers).json()
+
+    # Extract only the AI's response text
+    try:
+        return response["outputs"][0]["outputs"][0]["results"]["message"]["text"]
+    except (KeyError, IndexError):
+        return "Error: Unable to retrieve response. Please check API output."
+
 
 # Streamlit UI
-st.title("Langflow AI Agent")
+st.title("Digital Marketing Agent")
 user_input = st.text_area("Enter your message:")
 if st.button("Submit"):
     if user_input.strip():
-        response = run_flow(user_input)
-        output = response.get("output_value", "No valid response received.")
+        response_text = run_flow(user_input)
         st.write("### Response:")
-        st.write(output)
+        st.write(response_text)  # Show only AI's message
     else:
         st.warning("Please enter a message.")
+
